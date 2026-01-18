@@ -21,7 +21,7 @@ class ProductController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $validated['image_path'] = $request->file('image')
+            $validated['image_url'] = $request->file('image')
                 ->store('products', 'public');
         }
 
