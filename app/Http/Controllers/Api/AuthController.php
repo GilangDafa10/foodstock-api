@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use App\Models\Role;
 
@@ -12,22 +14,15 @@ class AuthController extends Controller
 {
 
     // Register
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'role_id' => 'nullable|exists:roles,id',
-        ]);
-
         $customerId = Role::where('name', 'customer')->firstOrFail()->id;
 
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
-            'role_id' => $validated['role_id'] ?? $customerId,
+            'name' => $request['name'],
+            'email' => $request['email'],
+            'password' => bcrypt($request['password']),
+            'role_id' => $request['role_id'] ?? $customerId,
         ]);
         return response()
             ->json([
@@ -37,12 +32,9 @@ class AuthController extends Controller
     }
 
     // Login
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+        $credentials = $request->validated();
 
         if (! Auth::attempt($credentials)) {
             return response()
@@ -54,7 +46,7 @@ class AuthController extends Controller
 
         return response()
             ->json([
-                'message' => 'Login successful',
+                'message' => 'login Berhasil Sebagai' . $user->name,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
                 'user' => $user,
