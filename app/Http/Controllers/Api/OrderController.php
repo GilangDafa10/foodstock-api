@@ -12,6 +12,7 @@ use App\Models\OrderDetail;
 use App\Models\Product;
 use App\Models\UserAddress;
 use App\Models\StockMovement;
+use App\Services\OrderCancelledServices;
 
 class OrderController extends Controller
 {
@@ -104,6 +105,20 @@ class OrderController extends Controller
                 $order->load('orderDetails.product')
             );
         });
+    }
+
+    public function cancel($id, OrderCancelledServices $canceller)
+    {
+        $order = Order::with('orderDetails')
+            ->where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        $canceller->cancel($order, 'Cancelled by user');
+
+        return response()->json([
+            'message' => 'Order berhasil dibatalkan'
+        ]);
     }
 
     public function show($id)
