@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\Product;
 
@@ -10,7 +11,22 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::all();
+        $products = Product::query()
+            ->select('id', 'name', 'price', 'image_url', 'unit', 'description')
+            ->selectSub(function ($q) {
+                $q->from('stock_movements')
+                    ->selectRaw("
+                COALESCE(SUM(
+                  CASE 
+                    WHEN type = 'in' THEN quantity
+                    WHEN type = 'out' THEN -quantity
+                  END
+                ), 0)
+              ")
+                    ->whereColumn('product_id', 'products.id');
+            }, 'stock')
+            ->get();
+
         return response()->json($products);
     }
 
@@ -70,6 +86,16 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        if ($product->stockMovements()->exists()) {
+            return response()->json([
+                'message' => 'Product memiliki histori stok'
+            ], 422);
+        }
+
+        if ($product->image_url) {
+            Storage::disk('public')->delete($product->image_url);
+        }
+
         $product->delete();
 
         return response()->json([

@@ -5,9 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Admin\CategoryController;
 use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\StockController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\Admin\StockController;
 use App\Http\Controllers\Api\Admin\OrderController as AdminOrderController;
 
 // Public Routes API
@@ -19,27 +19,32 @@ Route::post('/payment/callback', [PaymentController::class, 'callback']);
 
 Route::middleware('auth:sanctum')->group(function () {
     // Route Khusus Admin
-    Route::middleware(['role:admin'])->group(function () {
+    Route::middleware(['role:admin'])->prefix('admin')->group(function () {
         // Product CRUD
         // Route::apiResource('/admin/products', ProductController::class);
-        Route::post('/admin/products', [ProductController::class, 'store']);
-        Route::put('/admin/products/{product}', [ProductController::class, 'update']);
-        Route::delete('/admin/products/{product}', [ProductController::class, 'destroy']);
+        Route::post('/products', [ProductController::class, 'store']);
+        Route::put('/products/{product}', [ProductController::class, 'update']);
+        Route::delete('/products/{product}', [ProductController::class, 'destroy']);
         // Category CRUD
-        Route::apiResource('/admin/categories', CategoryController::class);
+        Route::apiResource('/categories', CategoryController::class);
+        // Kontrol Stok
+        Route::post('/stock/adjust', [StockController::class, 'adjust']);
+        Route::get('/stock/history', [StockController::class, 'history']);
 
-
-        Route::get('/admin/orders', [AdminOrderController::class, 'index']);
-        Route::get('/admin/orders/{id}', [AdminOrderController::class, 'show']);
+        // Manajemen Order
+        Route::get('/orders', [AdminOrderController::class, 'index']);
+        Route::get('/orders/{order}', [AdminOrderController::class, 'show']);
+        Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus']);
+        Route::delete('/orders/{order}/cancel', [AdminOrderController::class, 'cancel']);
     });
 
-    // Route Khusus Admin
+    // Route Khusus Customer
     Route::middleware(['role:customer'])->group(function () {});
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/products', [ProductController::class, 'index']);
-    Route::post('/stock/in', [StockController::class, 'stockIn']);
-    Route::post('/stock/out', [StockController::class, 'stockOut']);
+    // Route::post('/stock/in', [StockController::class, 'stockIn']);
+    // Route::post('/stock/out', [StockController::class, 'stockOut']);
     Route::post('/checkout', [OrderController::class, 'checkout']);
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);

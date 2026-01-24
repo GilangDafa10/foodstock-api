@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
+use App\Http\Requests\Admin\UpdateOrderStatusRequest;
+use App\Services\OrderCancelledServices;
 
 class OrderController extends Controller
 {
@@ -19,52 +21,41 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Order $order)
     {
-        return Order::where('id', $id)
-            ->where('user_id', auth()->id())
-            ->with('orderDetails.product')
-            ->firstOrFail();
+        return $order->load('orderDetails.product', 'user');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function updateStatus(Order $order, UpdateOrderStatusRequest $request)
     {
-        //
+        // Jika sudah completed / cancelled, tidak bisa diubah lagi
+        if (in_array($order->status, ['completed', 'cancelled'])) {
+            return response()->json([
+                'message' => 'Order sudah selesai atau dibatalkan, status tidak bisa diubah lagi.'
+            ], 422);
+        }
+
+        $order->update([
+            'status' => $request->input('status')
+        ]);
+
+        return response()->json([
+            'message' => 'Status order berhasil diupdate.',
+            'order' => $order
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function cancel(Order $order, OrderCancelledServices $canceller)
     {
-        //
-    }
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        if ($order->status === 'cancelled') {
+            return response()->json([
+                'message' => 'Order sudah dibatalkan.'
+            ], 422);
+        }
+        $canceller->cancel($order, 'Admin membatalkan pesanan.');
+        return response()->json([
+            'message' => 'Order berhasil dibatalkan oleh admin.',
+            'order' => $order
+        ]);
     }
 }

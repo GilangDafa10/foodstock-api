@@ -15,7 +15,7 @@ class Product extends Model
         'unit',
     ];
 
-    public function catergory()
+    public function category()
     {
         return $this->belongsTo(Category::class);
     }
@@ -36,7 +36,7 @@ class Product extends Model
     {
         $in  = $this->stockMovements()->where('type', 'in')->sum('quantity');
         $out = $this->stockMovements()->where('type', 'out')->sum('quantity');
-
-        return $in - $out;
+        $stockAvailable = $in - $out;
+        return $stockAvailable;
     }
 }
