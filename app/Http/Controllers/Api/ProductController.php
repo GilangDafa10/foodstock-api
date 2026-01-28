@@ -12,7 +12,8 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::query()
-            ->select('id', 'name', 'price', 'image_url', 'unit', 'description')
+            ->with('category:id,name')
+            ->select('id', 'name', 'price', 'image_url', 'unit', 'description', 'category_id')
             ->selectSub(function ($q) {
                 $q->from('stock_movements')
                     ->selectRaw("

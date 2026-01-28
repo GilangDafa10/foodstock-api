@@ -20,11 +20,21 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function getImageAttribute()
+    public function getImageUrlAttribute($value)
     {
-        return $this->image_url
-            ? asset('storage/' . $this->image_url)
-            : null;
+        // Jika $value kosong, return null
+        if (!$value) {
+            return null;
+        }
+
+        // Cek apakah $value sudah mengandung 'http' (untuk menghindari double link)
+        if (strpos($value, 'http') === 0) {
+            return $value;
+        }
+
+        // Return URL lengkap
+        // Hasilnya akan: http://localhost:8000/storage/products/namafile.jpg
+        return asset('storage/' . $value);
     }
 
     public function stockMovements()

@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(['role:customer'])->group(function () {});
 
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
     Route::get('/products', [ProductController::class, 'index']);
     // Route::post('/stock/in', [StockController::class, 'stockIn']);
     // Route::post('/stock/out', [StockController::class, 'stockOut']);
