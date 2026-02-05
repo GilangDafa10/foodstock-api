@@ -13,10 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'sanctum.idle' => \App\Http\Middleware\SanctumIdleTimeout::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

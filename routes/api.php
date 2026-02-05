@@ -9,15 +9,18 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\Admin\StockController;
 use App\Http\Controllers\Api\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Api\UserAddressController;
 
 // Public Routes API
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/products', [ProductController::class, 'index']);
+
 
 // callback biasanya PUBLIC
 Route::post('/payment/callback', [PaymentController::class, 'callback']);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum', 'sanctum.idle')->group(function () {
     // Route Khusus Admin
     Route::middleware(['role:admin'])->prefix('admin')->group(function () {
         // Product CRUD
@@ -39,11 +42,12 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Route Khusus Customer
-    Route::middleware(['role:customer'])->group(function () {});
+    Route::middleware(['role:customer'])->group(function () {
+        Route::apiResource('/addresses', UserAddressController::class);
+    });
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
-    Route::get('/products', [ProductController::class, 'index']);
     // Route::post('/stock/in', [StockController::class, 'stockIn']);
     // Route::post('/stock/out', [StockController::class, 'stockOut']);
     Route::post('/checkout', [OrderController::class, 'checkout']);
