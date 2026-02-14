@@ -18,7 +18,7 @@ Route::get('/products', [ProductController::class, 'index']);
 
 
 // callback biasanya PUBLIC
-Route::post('/payment/callback', [PaymentController::class, 'callback']);
+Route::post('/payment/midtrans/callback', [PaymentController::class, 'callback']);
 
 Route::middleware('auth:sanctum', 'sanctum.idle')->group(function () {
     // Route Khusus Admin
@@ -48,11 +48,10 @@ Route::middleware('auth:sanctum', 'sanctum.idle')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
-    // Route::post('/stock/in', [StockController::class, 'stockIn']);
-    // Route::post('/stock/out', [StockController::class, 'stockOut']);
     Route::post('/checkout', [OrderController::class, 'checkout']);
     Route::get('/orders', [OrderController::class, 'index']);
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders/{id}/cancel', [OrderController::class, 'cancel']);
     Route::post('/payments', [PaymentController::class, 'store']);
+    Route::post('/payments/{orderId}/retry', [PaymentController::class, 'retry']);
 });
